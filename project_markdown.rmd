@@ -17,8 +17,8 @@ The goal is to use data from various devices of volunteer exercisers and to pred
 
 ```{r}
 
-train <-read.csv(file = "C:/Users/Ekaterina Huster/Documents/Katya/Documents/R/predictwR/pml-training.csv", head = T, na.strings =  c("#DIV/0!", "", " ", "NA"))
-test <- read.csv(file = "C:/Users/Ekaterina Huster/Documents/Katya/Documents/R/predictwR/pml-testing.csv", head = T, na.strings = c("#DIV/0!", "", " ", "NA"))
+train <-read.csv(file = "pml-training.csv", head = T, na.strings =  c("#DIV/0!", "", " ", "NA"))
+test <- read.csv(file = "pml-testing.csv", head = T, na.strings = c("#DIV/0!", "", " ", "NA"))
 ```
 ```{r}
 library(caret)
