@@ -1,0 +1,133 @@
+---
+title: "Practical Machine Learning Project"
+author: "Katya Huster"
+date: "Saturday, November 21, 2015"
+output: html_document
+---
+####Introduction
+
+Given both training and test data from the following study we need to perform a research:
+    
+    Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human 2013) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+The goal is to use data from various devices of volunteer exercisers and to predict the manner in which they did the exercise.
+
+####Loading the data
+<p>First I load the libraries adn the data for the project. </p> 
+
+```{r}
+
+train <-read.csv(file = "C:/Users/Ekaterina Huster/Documents/Katya/Documents/R/predictwR/pml-training.csv", head = T, na.strings =  c("#DIV/0!", "", " ", "NA"))
+test <- read.csv(file = "C:/Users/Ekaterina Huster/Documents/Katya/Documents/R/predictwR/pml-testing.csv", head = T, na.strings = c("#DIV/0!", "", " ", "NA"))
+```
+```{r}
+library(caret)
+library(rpart.plot)
+library(rattle)
+library(rpart)
+library(randomForest)
+
+```
+Next is a quick overview of the data structure.
+```{r}
+str(train)
+names(train)
+```
+####Cleaning the data
+I see the first 8 variables are only for description purposes. I will take them out since they cannot be used as predictors.
+
+```{r}
+#remove first 8 columns - description only
+train<-train[, -c(1:8)]
+#check for NA values >60% of the rows 
+names <- c()
+for (i in 1:length(train)){
+    if(sum(is.na(train[,i])) >=.6){
+        names <-append(names,colnames(train)[i])
+    }
+}
+
+cleanTrain <- train[, -which(names(train) %in% names)]
+str(cleanTrain)
+
+```
+Removing the NA columns helped eliminate around 100 columns
+
+####Making Training & Testing Subset
+Since this is a relatively big data set with around 20,000 rows, I decided to split the initial train set into testing and training subset.
+
+```{r}
+###split the train data into training and testing set
+#leave the test set for validation
+inTrain <- createDataPartition(y=cleanTrain$classe, p = .6, list = F)
+training <- cleanTrain[inTrain,]
+testing <- cleanTrain [- inTrain,]
+```
+
+#####rpart Model
+As this is a classification task with categorical outcomes, I have chosen to test decision trees and random forests.
+I believe random forest should show better results, let's find out, if random forest is really that better than decision trees.
+
+```{r}
+set.seed(12321)
+#create model with cross-validation for Classification  trees
+modFit1<- train(classe~., data = training, method = "rpart", 
+                trControl=trainControl(method = "cv", number = 4))
+print(modFit1)
+
+fancyRpartPlot(modFit1$finalModel)
+```
+
+After crating the model next step is to check how good it is performing against test data
+
+```{r, echo=FALSE}
+#predict with tree model:
+prediction1 <-predict(modFit1, newdata = testing)
+#check the accuracy
+confusionMatrix(prediction1, testing$classe)
+table(prediction1, testing$classe)
+```
+
+In this case the model is not better than a flip of a coin, giving less than 50% accuracy. The model definitely needs improving. 
+Both in sample and out of sample accuracy is less than 50%.
+```{r}
+#check for near zero variance variables which are not good predictors
+nzv <- nearZeroVar(training, saveMetrics = T)
+nzv[nzv$nzv =="TRUE",]
+```
+Checking the near-zero variance didn't help creating the right solution. Only one column has near zero variance, but it actually has zero-variance. Eliminating this column might not necessary improve the results. 
+
+
+#####randomForest
+As the initial prediction model showed poor results, I'm moving to random Forests to test this model accuracy.
+
+*** Note: I could not run a train model with random forest as a model. It would run for hours and then crush the sistem or return a memory error. However, running a randomForest function directly return the results in seconds.
+
+```{r}
+set.seed(12321)
+#create random forest model 
+
+#modFit2 <- train(classe~., data = training, method = "rf", prox = T, 
+#                 tuneGrid = data.frame(mtry=10), allowParallel=T, 
+#                 trControl=trainControl(method = "cv", number = 3))
+modfit2 <-randomForest(data = training, classe~., mtry = 3, type = 'classification')
+print(modFit2)
+```
+At this time in sample error is about 1%.
+Let's check the prediction accuracy.
+```{r}
+#predict
+prediction2 <- predict(modfit2, newdata = testing)
+#check accuracy of prediction
+confusionMatrix(prediction2, testing$classe)
+table(prediction2, testing$classe)
+```
+The random Forest model has 99.2% accuracy which is drastic improvement compared to Decision Trees.
+
+
+####Conclusion
+THe completed project showed that random forest is far more superior than Decision Trees model. However, it is also very computationally intence.
+Due to time limitation, I was not able to perform multiple model testing. Finding a model that can combime accuracy and timely implementation would be an interesting extention to this project.
+
+As of the data and the results for prediction, please keep in mind this test was done using a very small sample of the population, and new data will most certainly bring the accuracy down.
+Looking into the results of prediction, it is great to see that there are ways to monitor the quality of fitness exsercises. 
