@@ -111,7 +111,7 @@ set.seed(12321)
 #                 tuneGrid = data.frame(mtry=10), allowParallel=T, 
 #                 trControl=trainControl(method = "cv", number = 3))
 modfit2 <-randomForest(data = training, classe~., mtry = 3, type = 'classification')
-print(modFit2)
+print(modfit2)
 ```
 At this time in sample error is about 1%.
 Let's check the prediction accuracy.
@@ -126,7 +126,7 @@ The random Forest model has 99.2% accuracy which is drastic improvement compared
 
 
 ####Conclusion
-THe completed project showed that random forest is far more superior than Decision Trees model. However, it is also very computationally intence.
+The performed assignment showed that random forest is far more superior than Decision Trees model. However, it is also very computationally intence.
 Due to time limitation, I was not able to perform multiple model testing. Finding a model that can combime accuracy and timely implementation would be an interesting extention to this project.
 
 As of the data and the results for prediction, please keep in mind this test was done using a very small sample of the population, and new data will most certainly bring the accuracy down.
