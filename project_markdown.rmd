@@ -124,6 +124,10 @@ table(prediction2, testing$classe)
 ```
 The random Forest model has 99.2% accuracy which is drastic improvement compared to Decision Trees.
 
+####Final testing of new 20 observations:
+```{r}
+predicttest<- predict(modfit2, newdata = test)
+```
 
 ####Conclusion
 The performed assignment showed that random forest is far more superior than Decision Trees model. However, it is also very computationally intence.
